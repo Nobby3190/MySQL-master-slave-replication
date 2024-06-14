@@ -1,0 +1,9 @@
+# data
+data/master/*
+data/slave-1/*
+data/slave-2/*
+
+# log
+logs/master/*
+logs/slave-1/*
+logs/slave-2/*

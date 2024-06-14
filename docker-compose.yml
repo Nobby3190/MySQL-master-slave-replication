@@ -1,0 +1,64 @@
+version: '3'
+
+networks:
+  replication_network:
+
+services:
+  mysql-master:
+    image: mysql:latest
+    restart: unless-stopped
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_LOG_BIN: "ON"
+    volumes:
+      - ./sql-scripts/master:/docker-entrypoint-initdb.d
+      - ./logs/master:/var/log/mysql
+      - ./data/master:/var/lib/mysql
+      - type: bind
+        source: ./mysql-config/mysql-master.cnf
+        target: /etc/mysql/conf.d/mysql-master.cnf
+    networks:
+      - replication_network
+
+
+  mysql-replica-1:
+    image: mysql:latest
+    restart: unless-stopped
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_MASTER_HOST: mysql-master
+    volumes:
+      - ./sql-scripts/slave-1:/docker-entrypoint-initdb.d
+      - ./logs/slave-1:/var/log/mysql
+      - ./data/slave-1:/var/lib/mysql
+      - type: bind
+        source: ./mysql-config/mysql-slave-1.cnf
+        target: /etc/mysql/conf.d/mysql-slave-1.cnf
+    networks:
+      - replication_network
+
+
+  mysql-replica-2:
+    image: mysql:latest
+    restart: unless-stopped
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_MASTER_HOST: mysql-master
+    volumes:
+      - ./sql-scripts/slave-2:/docker-entrypoint-initdb.d
+      - ./logs/slave-2:/var/log/mysql
+      - ./data/slave-2:/var/lib/mysql
+      - type: bind
+        source: ./mysql-config/mysql-slave-2.cnf
+        target: /etc/mysql/conf.d/mysql-slave-2.cnf
+    networks:
+      - replication_network
